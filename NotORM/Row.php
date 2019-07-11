@@ -190,4 +190,17 @@ class NotORM_Row extends NotORM_Abstract implements IteratorAggregate, ArrayAcce
 		return $this->row;
 	}
 	
+	public function fetch_assoc_row ($orm, $recursive=true, $max_depth=999) {
+		$output = [];
+		foreach ($this as $key => $value) {
+			if (($recursive) and (preg_match ("/^.*_id$/", $key) and ($max_depth > 0))) {
+				$reference_table = substr ($key, 0, strlen ($key)-3);
+				$referenced_obj = $orm-> $reference_table[$value];
+				$output[$reference_table] = $referenced_obj-> fetch_assoc_row ($orm, $recursive, $max_depth -1);
+			} else {
+				$output[$key] = $value;
+			}
+		}
+		return $output;
+	}
 }
